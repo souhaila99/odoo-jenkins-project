@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Cloner le code source') {
             steps {
-                git branch: 'main', url: 'https://github.com/souhaila99/odoo-jenkins-project.git', changelog: false, credentialsId: '123'
+                git branch: 'main', url: 'https://github.com/souhaila99/odoo-jenkins-project.git', changelog: false, credentialsId: '1234'
             }
         }
         
