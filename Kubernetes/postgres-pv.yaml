@@ -1,0 +1,26 @@
+# postgre-pv.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: azure-disk
+provisioner: kubernetes.io/azure-disk
+parameters:
+  storageaccounttype: Standard_LRS
+  kind: Managed
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: odoo-namespace
+  annotations:
+    volume.beta.kubernetes.io/storage-class: azure-disk
+spec:
+  storageClassName: azure-disk
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+

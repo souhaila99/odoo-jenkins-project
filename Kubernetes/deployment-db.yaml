@@ -1,0 +1,52 @@
+# deployment-db.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+  namespace: odoo-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+      - name: db
+        image: postgres:12
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: "odoo3"
+        - name: POSTGRES_PASSWORD
+          value: "odoo"
+        - name: POSTGRES_DB
+          value: "test"
+        volumeMounts:
+        - mountPath: /var/lib/postgresql
+          name: postgres-storage
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+
+---
+
+# service-db.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: odoo-namespace
+spec:
+  selector:
+    app: db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+
