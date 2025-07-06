@@ -13,7 +13,18 @@ pipeline {
             steps {
                 script {
                     retry(2) {
-                        git branch: 'main', url: 'https://github.com/souhaila99/odoo-jenkins-project.git', changelog: false, credentialsId: '1234'
+                        checkout([
+                            $class: 'GitSCM',
+                            branches: [[name: '*/main']],
+                            userRemoteConfigs: [[
+                                url: 'https://github.com/souhaila99/odoo-jenkins-project.git',
+                                credentialsId: '1234'
+                            ]],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [
+                                [$class: 'CloneOption', shallow: true, depth: 1, timeout: 20]
+                            ]
+                        ])
                     }
                 }
             }
@@ -22,9 +33,7 @@ pipeline {
         stage('Construire l\'image Docker') {
             steps {
                 script {
-                    sh """
-                    docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
-                    """
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
                 }
             }
         }
@@ -43,9 +52,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
-                        sh """
-                        docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
-                        """
+                        sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
                     }
                 }
             }
@@ -55,9 +62,7 @@ pipeline {
             steps {
                 script {
                     withKubeConfig([credentialsId: KUBE_CONFIG_ID]) {
-                        sh """
-                        kubectl apply -f Kubernetes/
-                        """
+                        sh "kubectl apply -f Kubernetes/"
                     }
                 }
             }
