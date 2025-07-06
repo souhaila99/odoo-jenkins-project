@@ -11,10 +11,14 @@ pipeline {
     stages {
         stage('Cloner le code source') {
             steps {
-                git branch: 'main', url: 'https://github.com/souhaila99/odoo-jenkins-project.git', changelog: false, credentialsId: '1234'
+                script {
+                    retry(2) {
+                        git branch: 'main', url: 'https://github.com/souhaila99/odoo-jenkins-project.git', changelog: false, credentialsId: '1234'
+                    }
+                }
             }
         }
-        
+
         stage('Construire l\'image Docker') {
             steps {
                 script {
