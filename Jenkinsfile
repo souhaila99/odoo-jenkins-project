@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIALS_ID = 'docker-hub-credentials' 
-        DOCKER_IMAGE = 'souhaila999/odoo'          
+        DOCKER_IMAGE = 'souhaila999/testodoo'          
         DOCKER_TAG = '18.0'                           
         KUBE_CONFIG_ID = 'kube'                         
     }
