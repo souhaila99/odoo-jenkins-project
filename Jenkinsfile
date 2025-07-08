@@ -2,57 +2,36 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_CREDENTIALS_ID = 'docker-hub-credentials' 
-        DOCKER_IMAGE = 'souhaila999/testodoo'          
-        DOCKER_TAG = '18.0'                           
-        KUBE_CONFIG_ID = 'kube'                         
+        DOCKER_IMAGE = "souhaila999/testodoo"   // Remplace par ton nom d'image
+        DOCKER_TAG = "18.0"
+        DOCKER_CREDENTIALS_ID = "docker-hub-credentials" // ID des identifiants Docker Hub dans Jenkins
+        KUBE_CONFIG_ID = "aks-kubeconfig" // ID du fichier kubeconfig dans Jenkins
     }
 
     stages {
-        stage('Cloner le code source') {
+        stage('Checkout SCM') {
             steps {
-                script {
-                    retry(2) {
-                        checkout([
-                            $class: 'GitSCM',
-                            branches: [[name: '*/main']],
-                            userRemoteConfigs: [[
-                                url: 'https://github.com/souhaila99/odoo-jenkins-project.git',
-                                credentialsId: '1234'
-                            ]],
-                            doGenerateSubmoduleConfigurations: false,
-                            extensions: [
-                                [$class: 'CloneOption', shallow: true, depth: 1, timeout: 20]
-                            ]
-                        ])
-                    }
-                }
+                checkout scm
             }
         }
 
         stage('Construire l\'image Docker') {
             steps {
                 script {
-                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    sh """
+                    docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
+                    """
                 }
             }
         }
 
-        stage('Se connecter à Docker Hub') {
+        stage('Se connecter à Docker Hub et Pousser l\'image') {
             steps {
                 script {
-                    docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
-                        echo 'Authentifié avec succès à Docker Hub'
-                    }
-                }
-            }
-        }
-
-        stage('Pousser l\'image sur Docker Hub') {
-            steps {
-                script {
-                    docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
-                        sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+                        sh """
+                        docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+                        """
                     }
                 }
             }
@@ -62,35 +41,12 @@ pipeline {
             steps {
                 script {
                     withKubeConfig([credentialsId: KUBE_CONFIG_ID]) {
-                        sh "kubectl apply -f Kubernetes/"
+                        sh """
+                        kubectl apply -f Kubernetes/
+                        """
                     }
                 }
             }
-        }
-    }
-
-    post {
-        success {
-            emailext(
-                subject: "Pipeline ${env.JOB_NAME} - Succès",
-                body: """
-                    Le pipeline ${env.JOB_NAME} s'est terminé avec succès.
-                    Voir les détails à ${env.BUILD_URL}
-                """,
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                to: "achour.souhaila77@gmail.com"
-            )
-        }
-        failure {
-            emailext(
-                subject: "Pipeline ${env.JOB_NAME} - Échec",
-                body: """
-                    Le pipeline ${env.JOB_NAME} a échoué.
-                    Voir les détails à ${env.BUILD_URL}
-                """,
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                to: "achour.souhaila77@gmail.com"
-            )
         }
     }
 }
