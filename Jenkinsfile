@@ -29,7 +29,7 @@ pipeline {
             steps {
                 echo '🔐 Authentification à Docker Hub...'
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+                    docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
                         echo '✅ Authentifié avec succès à Docker Hub'
                     }
                 }
@@ -40,7 +40,7 @@ pipeline {
             steps {
                 echo '🚀 Push de l\'image Docker...'
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+                    docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
                         sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
                     }
                 }
