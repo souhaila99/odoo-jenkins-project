@@ -2,21 +2,20 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_CREDENTIALS_ID = 'docker-hub-credentials' 
-        DOCKER_IMAGE = 'souhaila999/testodoo'          
-        DOCKER_TAG = '18.0'                           
-        KUBE_CONFIG_ID = 'aks-kubeconfig'                         
+        DOCKER_CREDENTIALS_ID = 'docker-hub-credentials'
+        DOCKER_IMAGE = 'souhaila999/testodoo'
+        DOCKER_TAG = '18.0'
+        KUBE_CONFIG_ID = 'aks-kubeconfig'
     }
 
     stages {
-        stage('Checkout SCM') {
+        stage('📥 Clonage du dépôt Git') {
             steps {
-                echo '📥 Clonage du dépôt Git...'
-                    checkout scm
+                checkout scm
             }
         }
-        
-        stage('Construire l\'image Docker') {
+
+        stage('🔧 Construction de l\'image Docker') {
             steps {
                 script {
                     sh """
@@ -26,17 +25,17 @@ pipeline {
             }
         }
 
-        stage('Se connecter à Docker Hub') {
+        stage('🔐 Connexion à Docker Hub') {
             steps {
                 script {
                     docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
-                        echo 'Authentifié avec succès à Docker Hub'
+                        echo '✅ Authentifié avec succès à Docker Hub'
                     }
                 }
             }
         }
 
-        stage('Pousser l\'image sur Docker Hub') {
+        stage('📤 Push de l\'image sur Docker Hub') {
             steps {
                 script {
                     docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
@@ -48,13 +47,11 @@ pipeline {
             }
         }
 
-        stage('Déployer sur AKS') {
+        stage('🚀 Déploiement sur AKS') {
             steps {
                 script {
                     withKubeConfig([credentialsId: KUBE_CONFIG_ID]) {
-                        sh """
-                        kubectl apply -f Kubernetes/
-                        """
+                        sh "kubectl apply -f Kubernetes/"
                     }
                 }
             }
@@ -64,23 +61,15 @@ pipeline {
     post {
         success {
             emailext(
-                subject: "Pipeline ${env.JOB_NAME} - Succès",
-                body: """
-                    Le pipeline ${env.JOB_NAME} s'est terminé avec succès.
-                    Voir les détails à ${env.BUILD_URL}
-                """,
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                subject: "✅ Succès - ${env.JOB_NAME}",
+                body: "Le pipeline ${env.JOB_NAME} s'est terminé avec succès.\nDétails : ${env.BUILD_URL}",
                 to: "achour.souhaila77@gmail.com"
             )
         }
         failure {
             emailext(
-                subject: "Pipeline ${env.JOB_NAME} - Échec",
-                body: """
-                    Le pipeline ${env.JOB_NAME} a échoué.
-                    Voir les détails à ${env.BUILD_URL}
-                """,
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                subject: "❌ Échec - ${env.JOB_NAME}",
+                body: "Le pipeline ${env.JOB_NAME} a échoué.\nDétails : ${env.BUILD_URL}",
                 to: "achour.souhaila77@gmail.com"
             )
         }
