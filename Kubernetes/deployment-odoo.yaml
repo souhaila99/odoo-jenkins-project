@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: odoo
-        image: souhaila999/odoo:18.0
+        image: souhaila999/app-odoo:15.0
         ports:
         - containerPort: 8069
         envFrom:
