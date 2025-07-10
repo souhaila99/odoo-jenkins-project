@@ -9,13 +9,13 @@ pipeline {
     }
 
     stages {
-        stage('📥 Clonage du dépôt Git') {
+        stage('Clonage du dépôt Git') {
             steps {
                 checkout scm
             }
         }
 
-        stage('🔧 Construction de l\'image Docker') {
+        stage('Construction de l\'image Docker') {
             steps {
                 script {
                     sh """
@@ -25,17 +25,17 @@ pipeline {
             }
         }
 
-        stage('🔐 Connexion à Docker Hub') {
+        stage(' Connexion à Docker Hub') {
             steps {
                 script {
                     docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
-                        echo '✅ Authentifié avec succès à Docker Hub'
+                        echo ' Authentifié avec succès à Docker Hub'
                     }
                 }
             }
         }
 
-        stage('📤 Push de l\'image sur Docker Hub') {
+        stage(' Push de l\'image sur Docker Hub') {
             steps {
                 script {
                     docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
@@ -47,7 +47,7 @@ pipeline {
             }
         }
 
-        stage('🚀 Déploiement sur AKS') {
+        stage(' Déploiement sur AKS') {
             steps {
                 script {
                     withKubeConfig([credentialsId: KUBE_CONFIG_ID]) {
@@ -61,14 +61,14 @@ pipeline {
     post {
         success {
             emailext(
-                subject: "✅ Succès - ${env.JOB_NAME}",
+                subject: " Succès - ${env.JOB_NAME}",
                 body: "Le pipeline ${env.JOB_NAME} s'est terminé avec succès.\nDétails : ${env.BUILD_URL}",
                 to: "achour.souhaila77@gmail.com"
             )
         }
         failure {
             emailext(
-                subject: "❌ Échec - ${env.JOB_NAME}",
+                subject: " Échec - ${env.JOB_NAME}",
                 body: "Le pipeline ${env.JOB_NAME} a échoué.\nDétails : ${env.BUILD_URL}",
                 to: "achour.souhaila77@gmail.com"
             )
